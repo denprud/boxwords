@@ -2,24 +2,43 @@
 
 import React, { useEffect, useRef } from 'react'
 import Row from './Row'
+import Modal from './Modal';
 import { useState } from 'react'
 import useOutsideAlerter from '../hooks/useOutsideAlerter';
+import useEnforceRules from '../hooks/useEnforceRule';
 import PropTypes from "prop-types";
+import {GAMES} from "./../../../data/games"
+//import {dict, userCount} from  "./../../../data/dictionary"
 
 
 
 
-export default function Board(){
+
+
+
+export default function Board({gameCompleted, setGameCompleted, wordset, setWordset}){
   
-  const [wordset, setWordset] = useState([
-    {word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0}
-  ])
+  // const [wordset, setWordset] = useState([
+  //   {word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0}
+  // ])
   const wrapperRef = useRef(null);
+  //state to determine if we are deciding to click on a row
   const [isSelecting, setIsSelecting] = useState(true);
   const [selectedRow, setSelectedRow] = useState(null);
-  useOutsideAlerter(wrapperRef, isSelecting,()=>{
-    setSelectedRow(null)
-    setIsSelecting(!isSelecting);
+  const [rowOneValid, setRowOneValid] = useState(false);
+  const [rowTwoValid, setRowTwoValid] = useState(false);
+  const [rowThreeValid, setRowThreeValid] = useState(false);
+  const [rowFourValid, setRowFourValid] = useState(false);
+  const [rarity, setRarity] = useState(0);
+  //const [gameCompleted, setGameCompleted] = useState(false);
+  //const [validate, setValidate] = useState(false);
+  const [wordsAdded, setWordsAdded] = useState({})
+  const [rowRules, setRowRules] = useState({"rowOne": "none", "rowTwo": "none", "rowThree": "none", "rowFour": "none"})
+  const baseUrl = "http://localhost:5050";
+  
+  useOutsideAlerter(gameCompleted, wrapperRef, isSelecting,()=>{
+    //resets the selection process
+    resetStates()
   });
 
 
@@ -27,6 +46,66 @@ export default function Board(){
     window.addEventListener('keyup', handleKeyup)
     return () => window.removeEventListener('keyup', handleKeyup)
   }, [handleKeyup])
+
+  useEffect(() => {
+    const getCurrentGame = async () =>{
+      let results = await fetch(`${baseUrl}/api/getGame/64f6fb08dbeabec30dd186da`).then(resp => {
+           return resp.json()
+      }).then(data => {
+        setRowRules(data)
+      }).catch((err)=>{
+          console.log(err.message);
+      });
+   }
+
+   getCurrentGame()
+  }, [])
+
+
+  useEffect(()=>{
+    checkgame()
+  },[rowOneValid, rowTwoValid, rowThreeValid, rowFourValid])
+
+
+  //Sets the Validity of rows to false if the game begins or starts over (via Modal.js continue)
+  useEffect(()=>{
+    if(!gameCompleted){
+      setRowOneValid(false)
+      setRowTwoValid(false)
+      setRowThreeValid(false)
+      setRowFourValid(false)
+    }
+  },[gameCompleted])
+
+  useEffect(()=>{
+    const addWordsToDB = async () =>{
+      let results = await fetch(`${baseUrl}/api/update/recent/8`, {
+          method: 'PATCH',
+          mode: 'cors',
+          headers: {"content-type": "application/json",
+                    'Accept': '*/*',
+        },
+          body: JSON.stringify(wordsAdded)
+      }).then(resp => {
+           return resp.json()
+      }).then(data => {
+        console.log(JSON.stringify(wordsAdded))
+        console.log("hi")
+        //console.log(data)
+      }).catch((err)=>{
+          console.log(err.message);
+      });
+   }
+   addWordsToDB()
+  },[wordsAdded])
+  
+
+  function resetStates(){
+    setSelectedRow(null);
+    setIsSelecting(!isSelecting);
+    
+  }
+
 
   function handleKeyup(key){
     if (selectedRow === null || isSelecting) return;
@@ -39,7 +118,6 @@ export default function Board(){
         //newWordSet[selectedRow].word = newWordSet[selectedRow].word + key.key
         
         newWordSet = fixBoard(newWordSet, "append", key)
-        console.log(newWordSet)
         setWordset(newWordSet)
       }
     }
@@ -54,20 +132,13 @@ export default function Board(){
   function fixBoard(newWordSet, type, key){
     const index = newWordSet[selectedRow].index
     switch(selectedRow){
-        case 0:
+        case 0:          
           if(newWordSet[selectedRow].index  === 0){
             if(type === "append"){
               newWordSet[selectedRow].word[index] =  key.key
               newWordSet[1].word[0] = key.key
-              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow])
-              newWordSet[1].index = findEmpty(newWordSet[1])
-              
-            }
-            if(type === "delete"){
-              newWordSet[selectedRow].word[index] = ""
-              newWordSet[1].word = Array(5).fill("")
-              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow])
-              newWordSet[1].index = findEmpty(newWordSet[1])
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[1].index = findEmpty(newWordSet[1].word)
             }
           }
 
@@ -75,65 +146,94 @@ export default function Board(){
             if(type === "append"){
               newWordSet[selectedRow].word[index] = key.key
               newWordSet[2].word[0] = key.key
-              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow])
-              newWordSet[2].index = findEmpty(newWordSet[2])
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[2].index = findEmpty(newWordSet[2].word)
             }
             if(type === "delete"){
+              if (newWordSet[selectedRow].word.includes("")){
+                newWordSet[selectedRow].word[newWordSet[selectedRow].index-1] = ""
+                newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+                break;
+              }
               newWordSet[selectedRow].word[index] = ""
               newWordSet[2].word = Array(5).fill("")
-              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow])
-              newWordSet[2].index = findEmpty(newWordSet[2])
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[2].index = findEmpty(newWordSet[2].word)
             }
           }
 
-          else if(newWordSet[selectedRow].index <= 4 ){
+          else if(newWordSet[selectedRow].index < 4 ){
             if(type === "delete"){
-              newWordSet[selectedRow].word[index] = ""
-              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow])
+              if (newWordSet[selectedRow].index  === 1){
+                  newWordSet[selectedRow].word[index-1] = ""
+                  newWordSet[1].word = Array(5).fill("")
+                  newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+                  newWordSet[1].index = findEmpty(newWordSet[1].word)
+              }
+              else{
+              newWordSet[selectedRow].word[index-1] = ""
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              }
             }
             else if (type==="append"){
               newWordSet[selectedRow].word[index] = key.key
-              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow])
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
             }
           }
           break;
         case 1:
           if(newWordSet[selectedRow].index  === 0){
             if(type === "append"){
-              newWordSet[selectedRow].word[index] =  key.key
+              newWordSet[selectedRow].word[newWordSet[selectedRow].index] =  key.key
               newWordSet[0].word[0] = key.key
-              newWordSet[selectedRow].index = 1
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[0].index = findEmpty(newWordSet[0].word)
               
             }
             if(type === "delete"){
-              newWordSet[selectedRow].word[index] = ""
+              newWordSet[selectedRow].word[newWordSet[selectedRow].index] = ""
               newWordSet[0].word = Array(5).fill("")
-              newWordSet[selectedRow].index = 0
-              newWordSet[1].index = 0
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[0].index = findEmpty(newWordSet[0].word)
             }
           }
 
           else if(newWordSet[selectedRow].index  === 4){
             if(type === "append"){
-              newWordSet[selectedRow].word[index] = key.key
+              newWordSet[selectedRow].word[newWordSet[selectedRow].index] = key.key
               newWordSet[3].word[0] = key.key
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[3].index = findEmpty(newWordSet[3].word)
             }
             if(type === "delete"){
-              newWordSet[selectedRow].word[index] = ""
+              if (newWordSet[selectedRow].word.includes("")){
+                newWordSet[selectedRow].word[newWordSet[selectedRow].index-1] = ""
+                newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+                break;
+              }
+              newWordSet[selectedRow].word[newWordSet[selectedRow].index] = ""
               newWordSet[3].word = Array(5).fill("")
-              newWordSet[selectedRow].index = 3
-              newWordSet[3].index = 0
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[3].index = findEmpty(newWordSet[3].word)
             }
           }
 
-          else if(newWordSet[selectedRow].index <= 4 ){
+          else if(newWordSet[selectedRow].index < 4 ){
             if(type === "delete"){
-              newWordSet[selectedRow].word[index] = ""
-              newWordSet[selectedRow].index -= 1
+              if (newWordSet[selectedRow].index  === 1){
+                  newWordSet[selectedRow].word[index-1] = ""
+                  newWordSet[0].word = Array(5).fill("")
+                  newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+                  newWordSet[0].index = findEmpty(newWordSet[1].word)
+              }
+              else{
+              newWordSet[selectedRow].word[index-1] = ""
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              }
             }
             else if (type==="append"){
-              newWordSet[selectedRow].word[index] = key.key
-              newWordSet[selectedRow].index += 1
+              newWordSet[selectedRow].word[newWordSet[selectedRow].index] = key.key
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
             }
           }
           break;
@@ -142,13 +242,9 @@ export default function Board(){
             if(type === "append"){
               newWordSet[selectedRow].word[index] =  key.key
               newWordSet[0].word[4] = key.key
-              newWordSet[selectedRow].index = 1
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[0].index = findEmpty(newWordSet[0].word)
               
-            }
-            if(type === "delete"){
-              newWordSet[selectedRow].word[index] = ""
-              newWordSet[0].word[4] = ""
-              newWordSet[selectedRow].index = 0
             }
           }
 
@@ -156,22 +252,38 @@ export default function Board(){
             if(type === "append"){
               newWordSet[selectedRow].word[index] = key.key
               newWordSet[3].word[4] = key.key
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[3].index = findEmpty(newWordSet[3].word)
             }
             if(type === "delete"){
+              if (newWordSet[selectedRow].word.includes("")){
+                newWordSet[selectedRow].word[newWordSet[selectedRow].index-1] = ""
+                newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+                break;
+              }
               newWordSet[selectedRow].word[index] = ""
               newWordSet[3].word[index] = ""
-              newWordSet[selectedRow].index = 3         
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[3].index = findEmpty(newWordSet[3].word)         
             }
           }
 
-          else if(newWordSet[selectedRow].index <= 4 ){
+          else if(newWordSet[selectedRow].index < 4 ){
             if(type === "delete"){
-              newWordSet[selectedRow].word[index] = ""
-              newWordSet[selectedRow].index -= 1
+              if (newWordSet[selectedRow].index  === 1){
+                newWordSet[selectedRow].word[index-1] = ""
+                newWordSet[0].word[4] = ""
+                newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+                newWordSet[0].index = findEmpty(newWordSet[0].word)
+              }
+              else{
+              newWordSet[selectedRow].word[index-1] = ""
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              }
             }
             else if (type==="append"){
               newWordSet[selectedRow].word[index] = key.key
-              newWordSet[selectedRow].index += 1
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
             }
           }
           break; 
@@ -180,13 +292,15 @@ export default function Board(){
             if(type === "append"){
               newWordSet[selectedRow].word[index] =  key.key
               newWordSet[1].word[4] = key.key
-              newWordSet[selectedRow].index = 1
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[1].index = findEmpty(newWordSet[1].word)
               
             }
             if(type === "delete"){
               newWordSet[selectedRow].word[index] = ""
               newWordSet[1].word[4] = ""
-              newWordSet[selectedRow].index = 0
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[1].index = findEmpty(newWordSet[1].word)
             }
           }
 
@@ -194,22 +308,38 @@ export default function Board(){
             if(type === "append"){
               newWordSet[selectedRow].word[index] = key.key
               newWordSet[2].word[4] = key.key
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[2].index = findEmpty(newWordSet[2].word)
             }
             if(type === "delete"){
+              if (newWordSet[selectedRow].word.includes("")){
+                newWordSet[selectedRow].word[newWordSet[selectedRow].index-1] = ""
+                newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+                break;
+              }
               newWordSet[selectedRow].word[index] = ""
               newWordSet[2].word[index] = ""
-              newWordSet[selectedRow].index = 3         
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              newWordSet[2].index = findEmpty(newWordSet[2].word)         
             }
           }
 
-          else if(newWordSet[selectedRow].index <= 4 ){
+          else if(newWordSet[selectedRow].index < 4 ){
             if(type === "delete"){
-              newWordSet[selectedRow].word[index] = ""
-              newWordSet[selectedRow].index -= 1
+              if (newWordSet[selectedRow].index  === 1){
+                newWordSet[selectedRow].word[index-1] = ""
+                newWordSet[1].word[4] = ""
+                newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+                newWordSet[1].index = findEmpty(newWordSet[1].word)
+              }
+              else{
+              newWordSet[selectedRow].word[index-1] = ""
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
+              }
             }
             else if (type==="append"){
-            newWordSet[selectedRow].word[index] = key.key
-            newWordSet[selectedRow].index += 1
+              newWordSet[selectedRow].word[index] = key.key
+              newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
             }
           }
           break; 
@@ -218,26 +348,101 @@ export default function Board(){
   }
 
   function findEmpty(wordArray){
-    foundIndex = wordArray.findIndex((element) => element === "")
-    if (foundIndex === -1) return 4
-    return foundIndex
+    const foundIndex = wordArray.indexOf("")
+    if (foundIndex === -1) return 4;
+    return foundIndex;
   }
 
   function handleClick(num){
-    console.log(num);
-    setSelectedRow(num);
     if(selectedRow === null){
+     
       setIsSelecting(!isSelecting);
+      
     }
-  }  
+    setSelectedRow(num);
+  } 
+  
+  function handleSubmit(){
+      setRowOneValid(useEnforceRules(rowRules.rowOne, wordset[0].word, wordset))
+      setRowTwoValid(useEnforceRules(rowRules.rowTwo, wordset[1].word, wordset))
+      setRowThreeValid(useEnforceRules(rowRules.rowThree, wordset[2].word, wordset))
+      setRowFourValid(useEnforceRules(rowRules.rowFour, wordset[3].word, wordset))
+      }
+  
+
+  function checkgame(){
+    if (rowOneValid && rowTwoValid && rowThreeValid && rowFourValid ){
+      resetStates()
+      let newRarity = 0
+      let newWordsAdded = {}
+      let wordsExist;
+      const getWords = async () =>{
+        let results =  await fetch(`${baseUrl}/api/getOne/recent/1`).then(resp => {
+            return resp.json()
+          }).then( (data)=>{
+            //console.log(data)
+            wordsExist = data;
+             wordset.forEach (element => {
+              const string = arrayToString(element.word)
+              //console.log(Object.values(wordsExist))
+              if (wordsExist.hasOwnProperty(string)){
+                
+                newWordsAdded[string] =  wordsExist[string] + 1;
+                newRarity += 1/(wordsExist[string] + 1)
+              }
+              else{
+                //console.log("yes")
+                newWordsAdded[string] = 1;
+                newRarity += 1
+              }
+            });
+           console.log(newRarity)
+           setRarity(newRarity)
+           return newWordsAdded
+        }).then((data) => setWordsAdded(data)).then(setGameCompleted(true)).then().catch((err)=>{
+            console.log(err.message);
+        });
+        //console.log(results)
+      }
+      getWords()
+      
+      
+      //var replacer = function(k, v) { if (v === undefined) { return null; } return v; };
+      //console.log(wordsAdded)
+      //wordsAdded = JSON.stringify(wordsAdded, replacer);
+      //console.log(wordsAdded)
+      
+      
+      
+     
+
+    }
+    else{
+      setGameCompleted(false)
+    }
+  }
+
+  function arrayToString(arr){
+    let stringOutput = '';
+    for (const element of arr){
+        stringOutput += element;
+    }
+    return stringOutput
+}
 
   return (
    
     <div className="board_module" ref={wrapperRef}>
-          <Row baseClass={"row_module top"} onRowClick={()=>handleClick(0)} hoverStatus = {isSelecting}/>
-          <Row baseClass={"row_module left"} onRowClick={()=>handleClick(1)} hoverStatus = {isSelecting}/>
-          <Row baseClass={"row_module right"} onRowClick={()=>handleClick(2)} hoverStatus = {isSelecting}/>
-          <Row baseClass={"row_module bottom"} onRowClick={()=>handleClick(3)} hoverStatus = {isSelecting}/>
+          <Row baseClass={"row_module top"} onRowClick={()=>handleClick(0)} hoverStatus = {isSelecting} currentWord = {wordset[0]} selectedRow={selectedRow}/>
+          <Row baseClass={"row_module left"} onRowClick={()=>handleClick(1)} hoverStatus = {isSelecting} currentWord = {wordset[1]} selectedRow={selectedRow}/>
+          <Row baseClass={"row_module right"} onRowClick={()=>handleClick(2)} hoverStatus = {isSelecting} currentWord = {wordset[2]} selectedRow={selectedRow}/>
+          <Row baseClass={"row_module bottom"} onRowClick={()=>handleClick(3)} hoverStatus = {isSelecting} currentWord = {wordset[3]} selectedRow={selectedRow}/>
+          <div className='inner_box'>
+            <div className="rarity">{rarity}</div>
+            <button className="submit_button" type="button" onClick={()=>handleSubmit()} >Click Me!</button>
+          </div>
+          
+          {/* {gameCompleted && <Modal setOpenModal={setGameCompleted}/>} */}
     </div>
     
   )

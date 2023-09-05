@@ -1,0 +1,13 @@
+{
+  "folders": [
+	{
+		"path": "."
+	},
+	{
+		"path": "../Downloads/The Box"
+	}
+],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "The Box"
+  }
+}
