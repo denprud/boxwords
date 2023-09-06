@@ -11,7 +11,7 @@ function Modal({ setOpenModal, numberOfTries }) {
           <h1>Congrats</h1>
         </div>
         <div className="message">
-          <p>You've completed the puzzle!</p>
+          <p>You&apos;ve completed the puzzle!</p>
         </div>
         <div className="footer">
           <button

@@ -26,7 +26,7 @@ export default function Home() {
     ])
     
     if (gameCompleted === true){      
-      setNumberOfTries(numberOfTries+1)
+      setNumberOfTries(()=>numberOfTries+1)
     }
   }, [gameCompleted]);
 

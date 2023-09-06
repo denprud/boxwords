@@ -12,7 +12,7 @@ export default function Row({baseClass, onRowClick, hoverStatus, currentWord, se
 
   useEffect(()=>{
     setClassName(baseClass)
-  }, [hoverStatus, selectedRow])
+  }, [hoverStatus, selectedRow, baseClass])
  
 
     function Square({i}){

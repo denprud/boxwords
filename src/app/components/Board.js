@@ -362,7 +362,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
     setSelectedRow(num);
   } 
   
-  function handleSubmit(){
+  function HandleSubmit(){
       setRowOneValid(useEnforceRules(rowRules.rowOne, wordset[0].word, wordset))
       setRowTwoValid(useEnforceRules(rowRules.rowTwo, wordset[1].word, wordset))
       setRowThreeValid(useEnforceRules(rowRules.rowThree, wordset[2].word, wordset))
@@ -439,7 +439,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
           <Row baseClass={"row_module bottom"} onRowClick={()=>handleClick(3)} hoverStatus = {isSelecting} currentWord = {wordset[3]} selectedRow={selectedRow}/>
           <div className='inner_box'>
             <div className="rarity">{rarity}</div>
-            <button className="submit_button" type="button" onClick={()=>handleSubmit()} >Click Me!</button>
+            <button className="submit_button" type="button" onClick={()=>HandleSubmit()} >Click Me!</button>
           </div>
           
           {/* {gameCompleted && <Modal setOpenModal={setGameCompleted}/>} */}
