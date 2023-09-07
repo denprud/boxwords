@@ -8,6 +8,7 @@ import useOutsideAlerter from '../hooks/useOutsideAlerter';
 import useEnforceRules from '../hooks/useEnforceRule';
 import PropTypes from "prop-types";
 import {GAMES} from "./../../../data/games"
+import { configDotenv } from 'dotenv';
 //import {dict, userCount} from  "./../../../data/dictionary"
 
 
@@ -21,6 +22,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   // const [wordset, setWordset] = useState([
   //   {word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0}
   // ])
+  configDotenv()
   const wrapperRef = useRef(null);
   //state to determine if we are deciding to click on a row
   const [isSelecting, setIsSelecting] = useState(true);
@@ -34,7 +36,8 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   //const [validate, setValidate] = useState(false);
   const [wordsAdded, setWordsAdded] = useState({})
   const [rowRules, setRowRules] = useState({"rowOne": "none", "rowTwo": "none", "rowThree": "none", "rowFour": "none"})
-  const baseUrl = "http://localhost:5050";
+  const baseUrl = process.env.DATA_API_URL;
+  console.log(baseUrl)
   
   useOutsideAlerter(gameCompleted, wrapperRef, isSelecting,()=>{
     //resets the selection process

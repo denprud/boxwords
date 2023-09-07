@@ -17,7 +17,8 @@ import {router} from './routes/routes.js'
 configDotenv()
 const Express = pkg;
 const cors  = cpkg;
-const mongoString = process.env.ATLAS_URI;
+const mongoString = process.env.MONGODB_URI;
+const baseUrl = process.env.DATA_API_URL;
 export let recentID = {id: "64f1212b80d1ea9c098eaf09"};
 export let currentPuzzle = {current: 1};
 
@@ -54,8 +55,8 @@ app.use((req, res, next) => {
     next();
   })
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server Started at ${process.env.PORT}`)
+app.listen(baseUrl, () => {
+    console.log(`Server Started at ${baseUrl}`)
 })
 
 
@@ -69,7 +70,6 @@ app.use('/api', router)
 //     origin: 'http://localhost:3000'
 //   }));
 
-const baseUrl = "http://localhost:5050";
 
 // const lol = {
 //     name : "halls",
