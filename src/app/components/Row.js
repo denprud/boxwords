@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 
 
-export default function Row({baseClass, onRowClick, hoverStatus, currentWord, selectedRow}) {
+export default function Row({baseClass, onRowClick, hoverStatus, currentWord, selectedRow, setRowGame, rowRules}) {
   
   const [className, setClassName] = useState(baseClass);
   const [letter, setLetter] = useState(currentWord.word[currentWord.index])
@@ -41,9 +41,11 @@ export default function Row({baseClass, onRowClick, hoverStatus, currentWord, se
         <div className={className}
         onMouseEnter={() => {
           setClassName(() => { return hoverStatus ? baseClass + " hover" : className});
+          setRowGame(rowRules)    
         }}
         onMouseLeave={() => {
           setClassName(() => { return hoverStatus ? baseClass : className})
+          setRowGame("")
         }}
         onClick={()=>{
           

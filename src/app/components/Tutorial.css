@@ -1,4 +1,4 @@
-.modalBackground {
+.tutorialBackground {
     width: 100vw;
     height: 100vh;
     background-color: rgba(200, 200, 200, 0.3);
@@ -8,7 +8,7 @@
     align-items: center;
   }
   
-  .modalContainer {
+  .tutorialContainer {
     width: 20vw;
     height: 20vh;
     border-radius: 12px;
@@ -17,9 +17,10 @@
     display: flex;
     flex-direction: column;
     padding: 25px;
+    overflow-y: auto;
   }
   
-  .modalContainer .title {
+  .tutorialContainer .title {
     display: inline-block;
     text-align: center;
     margin-top: 10px;
@@ -37,7 +38,7 @@
     cursor: pointer;
   }
   
-  .modalContainer .message {
+  .tutorialContainer .message {
     flex: 50%;
     display: flex;
     justify-content: center;
@@ -46,14 +47,14 @@
     text-align: center;
   }
   
-  .modalContainer .footer {
+  .tutorialContainer .footer {
     flex: 20%;
     display: flex;
     justify-content: center;
     align-items: center;
   }
   
-  .modalContainer .footer button {
+  .tutorialContainer .footer button {
     width: 150px;
     height: 45px;
     margin: 10px;

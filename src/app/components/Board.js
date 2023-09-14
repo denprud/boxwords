@@ -9,6 +9,12 @@ import useEnforceRules from '../hooks/useEnforceRule';
 import PropTypes from "prop-types";
 import {GAMES} from "./../../../data/games"
 import { configDotenv } from 'dotenv';
+import { set } from 'mongoose';
+import { useQuery, useMutation } from "@apollo/client";
+import gql from "graphql-tag";
+import * as Realm from "realm-web";
+import Amplify, { API } from 'aws-amplify';
+
 //import {dict, userCount} from  "./../../../data/dictionary"
 
 
@@ -22,7 +28,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   // const [wordset, setWordset] = useState([
   //   {word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0}
   // ])
-  configDotenv()
+  //configDotenv()
   const wrapperRef = useRef(null);
   //state to determine if we are deciding to click on a row
   const [isSelecting, setIsSelecting] = useState(true);
@@ -36,8 +42,52 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   //const [validate, setValidate] = useState(false);
   const [wordsAdded, setWordsAdded] = useState({})
   const [rowRules, setRowRules] = useState({"rowOne": "none", "rowTwo": "none", "rowThree": "none", "rowFour": "none"})
-  const baseUrl = process.env.DATA_API_URL;
-  console.log(baseUrl)
+  const [rowGame, setRowGame] = useState("")
+  const app = new Realm.App({ id: process.env.NEXT_PUBLIC_APP_ID });
+  const baseUrl = process.env.NEXT_PUBLIC_DATA_API_URL;
+  
+//   Amplify.configure({
+//     // Auth: {
+//     // // REQUIRED - Amazon Cognito Identity Pool ID
+//     //     identityPoolId: 'XX-XXXX-X:XXXXXXXX-XXXX-1234-abcd-1234567890ab',
+//     // // REQUIRED - Amazon Cognito Region
+//     //     region: 'XX-XXXX-X', 
+//     // // OPTIONAL - Amazon Cognito User Pool ID
+//     //     userPoolId: 'XX-XXXX-X_abcd1234', 
+//     // // OPTIONAL - Amazon Cognito Web Client ID
+//     //     userPoolWebClientId: 'XX-XXXX-X_abcd1234',
+//     // },
+//     API: {
+//         endpoints: [ 
+//             {
+//                 name: "myLamdaFunction-API",
+//                 endpoint: "https://lambda.us-east-1.amazonaws.com/2015-03-31/functions/yourFuncName/invocations",
+//                 service: "https://jd0n34sx9g.execute-api.eu-central-1.amazonaws.com/default/myLamdaFunction",
+//                 region: "eu-central-1"
+//             }
+//         ]
+//     }
+// })
+ 
+  
+
+  async function getValidAccessToken() {
+    // Guarantee that there's a logged in user with a valid access token
+    if (!app.currentUser) {
+      // If no user is logged in, log in an anonymous user. The logged in user will have a valid
+      // access token.
+      await app.logIn(Realm.Credentials.anonymous());
+    } else {
+      // An already logged in user's access token might be stale. Tokens must be refreshed after 
+      // 30 minutes. To guarantee that the token is valid, we refresh the user's access token.
+      await app.currentUser.refreshAccessToken();
+    }
+    return app.currentUser.accessToken;
+  }
+  
+
+
+  //console.log(baseUrl)
   
   useOutsideAlerter(gameCompleted, wrapperRef, isSelecting,()=>{
     //resets the selection process
@@ -51,17 +101,19 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   }, [handleKeyup])
 
   useEffect(() => {
-    const getCurrentGame = async () =>{
-      let results = await fetch(`${baseUrl}/api/getGame/64f6fb08dbeabec30dd186da`).then(resp => {
-           return resp.json()
-      }).then(data => {
-        setRowRules(data)
-      }).catch((err)=>{
-          console.log(err.message);
-      });
-   }
+  //   const getCurrentGame = async () =>{
+  //     let results = await fetch(`${baseUrl}/api/getGame`).then(resp => {
+  //          return resp.json()
+  //     }).then(data => {
+  //       setRowRules(data)
+  //       console.log(data)
+  //     }).catch((err)=>{
+  //         console.log(err.message);
+  //     });
+  //  }
 
-   getCurrentGame()
+   
+   //getCurrentGame()
   }, [])
 
 
@@ -81,12 +133,38 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   },[gameCompleted])
 
   useEffect(()=>{
+   
+    
     const addWordsToDB = async () =>{
-      let results = await fetch(`${baseUrl}/api/update/recent/8`, {
+      // let apiName = 'MyApiName'; // replace this with your api name.
+      // let path = '/path'; //replace this with the path you have configured on your API
+      // let myInit = {
+      //   body: {}, // replace this with attributes you need
+      //   headers: {} // OPTIONAL
+      // }
+
+      // API.post(apiName, path, myInit).then(response => {
+      //     // Add your code here
+      // });
+      
+      
+      const accessToken = await getValidAccessToken();
+      console.log(accessToken)
+      
+      //https://cors-anywhere.herokuapp.com/
+      
+
+      //Need a better solution
+      let results = await fetch(`https://thingproxy.freeboard.io/fetch/${baseUrl}/api/update/recent`, {
           method: 'PATCH',
-          mode: 'cors',
-          headers: {"content-type": "application/json",
+          mode: "cors",
+          headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    "Access-Control-Allow-Origin" : '*',
+                    
+                    "content-type": "application/json",
                     'Accept': '*/*',
+                    
         },
           body: JSON.stringify(wordsAdded)
       }).then(resp => {
@@ -97,6 +175,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
         //console.log(data)
       }).catch((err)=>{
           console.log(err.message);
+          console.log(accessToken);
       });
    }
    addWordsToDB()
@@ -106,6 +185,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   function resetStates(){
     setSelectedRow(null);
     setIsSelecting(!isSelecting);
+    setRowGame("")
     
   }
 
@@ -380,11 +460,11 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
       let newWordsAdded = {}
       let wordsExist;
       const getWords = async () =>{
-        let results =  await fetch(`${baseUrl}/api/getOne/recent/1`).then(resp => {
+        let results =  await fetch(`${baseUrl}/api/getOne/recent`).then(resp => {
             return resp.json()
           }).then( (data)=>{
-            //console.log(data)
-            wordsExist = data;
+            console.log(data[0])
+            wordsExist = data[0];
              wordset.forEach (element => {
               const string = arrayToString(element.word)
               //console.log(Object.values(wordsExist))
@@ -436,14 +516,16 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   return (
    
     <div className="board_module" ref={wrapperRef}>
-          <Row baseClass={"row_module top"} onRowClick={()=>handleClick(0)} hoverStatus = {isSelecting} currentWord = {wordset[0]} selectedRow={selectedRow}/>
-          <Row baseClass={"row_module left"} onRowClick={()=>handleClick(1)} hoverStatus = {isSelecting} currentWord = {wordset[1]} selectedRow={selectedRow}/>
-          <Row baseClass={"row_module right"} onRowClick={()=>handleClick(2)} hoverStatus = {isSelecting} currentWord = {wordset[2]} selectedRow={selectedRow}/>
-          <Row baseClass={"row_module bottom"} onRowClick={()=>handleClick(3)} hoverStatus = {isSelecting} currentWord = {wordset[3]} selectedRow={selectedRow}/>
+          <Row baseClass={"row_module top"} onRowClick={()=>handleClick(0)} hoverStatus = {isSelecting} currentWord = {wordset[0]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules.rowOne}/>
+          <Row baseClass={"row_module left"} onRowClick={()=>handleClick(1)} hoverStatus = {isSelecting} currentWord = {wordset[1]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules.rowOne}/>
+          <Row baseClass={"row_module right"} onRowClick={()=>handleClick(2)} hoverStatus = {isSelecting} currentWord = {wordset[2]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules.rowOne}/>
+          <Row baseClass={"row_module bottom"} onRowClick={()=>handleClick(3)} hoverStatus = {isSelecting} currentWord = {wordset[3]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules.rowOne}/>
           <div className='inner_box'>
             <div className="rarity">{rarity}</div>
-            <button className="submit_button" type="button" onClick={()=>HandleSubmit()} >Click Me!</button>
+            <button className="submit_button button" type="button" onClick={()=>HandleSubmit()} >Submit Puzzle!</button>
           </div>
+          <div className='row_game_noti'>{`${rowGame}`}</div>
+          
           
           {/* {gameCompleted && <Modal setOpenModal={setGameCompleted}/>} */}
     </div>

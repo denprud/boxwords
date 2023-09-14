@@ -14,13 +14,14 @@ import mongoose from 'mongoose';
 import { configDotenv } from 'dotenv';
 import {router} from './routes/routes.js'
 
-configDotenv()
+
 const Express = pkg;
 const cors  = cpkg;
 const mongoString = process.env.MONGODB_URI;
 const baseUrl = process.env.DATA_API_URL;
 export let recentID = {id: "64f1212b80d1ea9c098eaf09"};
 export let currentPuzzle = {current: 1};
+
 
 
 
@@ -49,7 +50,6 @@ app.use(Express.json());
 
 
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
     res.setHeader("Access-Control-Allow-Methods", "POST, GET, PATCH, PUT");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
     next();
@@ -62,7 +62,7 @@ app.listen(baseUrl, () => {
 
 app.use('/api', router)
 
-
+export default app;
 
 
 
@@ -104,7 +104,7 @@ const createDict = async () =>{
 
 scheduleJob('0 0 * * *', () => {
     createDict()
-    currentPuzzle += 1;
+    currentPuzzle.current += 1;
 }) // run everyday at midnight
 //createDict()
 //module.exports = recentID;
