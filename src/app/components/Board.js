@@ -10,10 +10,8 @@ import PropTypes from "prop-types";
 import {GAMES} from "./../../../data/games"
 import { configDotenv } from 'dotenv';
 import { set } from 'mongoose';
-import { useQuery, useMutation } from "@apollo/client";
-import gql from "graphql-tag";
 import * as Realm from "realm-web";
-import Amplify, { API } from 'aws-amplify';
+
 
 //import {dict, userCount} from  "./../../../data/dictionary"
 
@@ -46,31 +44,6 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   const app = new Realm.App({ id: process.env.NEXT_PUBLIC_APP_ID });
   const baseUrl = process.env.NEXT_PUBLIC_DATA_API_URL;
   
-//   Amplify.configure({
-//     // Auth: {
-//     // // REQUIRED - Amazon Cognito Identity Pool ID
-//     //     identityPoolId: 'XX-XXXX-X:XXXXXXXX-XXXX-1234-abcd-1234567890ab',
-//     // // REQUIRED - Amazon Cognito Region
-//     //     region: 'XX-XXXX-X', 
-//     // // OPTIONAL - Amazon Cognito User Pool ID
-//     //     userPoolId: 'XX-XXXX-X_abcd1234', 
-//     // // OPTIONAL - Amazon Cognito Web Client ID
-//     //     userPoolWebClientId: 'XX-XXXX-X_abcd1234',
-//     // },
-//     API: {
-//         endpoints: [ 
-//             {
-//                 name: "myLamdaFunction-API",
-//                 endpoint: "https://lambda.us-east-1.amazonaws.com/2015-03-31/functions/yourFuncName/invocations",
-//                 service: "https://jd0n34sx9g.execute-api.eu-central-1.amazonaws.com/default/myLamdaFunction",
-//                 region: "eu-central-1"
-//             }
-//         ]
-//     }
-// })
- 
-  
-
   async function getValidAccessToken() {
     // Guarantee that there's a logged in user with a valid access token
     if (!app.currentUser) {
@@ -149,7 +122,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
       
       
       const accessToken = await getValidAccessToken();
-      console.log(accessToken)
+      //console.log(accessToken)
       
       //https://cors-anywhere.herokuapp.com/
       
