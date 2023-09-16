@@ -8,6 +8,7 @@ import useOutsideAlerter from '../hooks/useOutsideAlerter';
 import useEnforceRules from '../hooks/useEnforceRule';
 import PropTypes from "prop-types";
 import {GAMES} from "./../../../data/games"
+import {wordsadded} from "./../../../data/wordsadded"
 import { configDotenv } from 'dotenv';
 import { set } from 'mongoose';
 import * as Realm from "realm-web";
@@ -38,7 +39,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   const [rarity, setRarity] = useState(0);
   //const [gameCompleted, setGameCompleted] = useState(false);
   //const [validate, setValidate] = useState(false);
-  const [wordsAdded, setWordsAdded] = useState({})
+  const [wordsAdded, setWordsAdded] = useState({test:6})
   const [rowRules, setRowRules] = useState({"rowOne": "none", "rowTwo": "none", "rowThree": "none", "rowFour": "none"})
   const [rowGame, setRowGame] = useState("")
   const app = new Realm.App({ id: process.env.NEXT_PUBLIC_APP_ID });
@@ -121,35 +122,48 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
       // });
       
       
-      const accessToken = await getValidAccessToken();
+      
+      //const accessToken = await getValidAccessToken();
       //console.log(accessToken)
       
       //https://cors-anywhere.herokuapp.com/
-      
 
-      //Need a better solution
-      let results = await fetch(`https://thingproxy.freeboard.io/fetch/${baseUrl}/api/update/recent`, {
-          method: 'PATCH',
-          mode: "cors",
-          headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    "Access-Control-Allow-Origin" : '*',
-                    
-                    "content-type": "application/json",
-                    'Accept': '*/*',
-                    
+      console.log(JSON.stringify(wordsAdded))
+      
+      let results = await fetch(`/api/serverless-example`,{ 
+        headers: {
+                       
+                        "content-type": "application/json",
+                        "Accept": "application/json"
         },
-          body: JSON.stringify(wordsAdded)
-      }).then(resp => {
-           return resp.json()
-      }).then(data => {
-        console.log(JSON.stringify(wordsAdded))
-        console.log("hi")
-        //console.log(data)
-      }).catch((err)=>{
-          console.log(err.message);
-          console.log(accessToken);
+        method: 'PATCH',
+        mode: "cors",
+        body: JSON.stringify(wordsAdded)
       });
+      //console.log(process.env.VERCELURL)
+      // //Need a better solution
+      // let results = await fetch(`https://thingproxy.freeboard.io/fetch/${baseUrl}/api/update/recent`, {
+      //     method: 'PATCH',
+      //     mode: "cors",
+      //     headers: {
+      //               'Authorization': `Bearer ${accessToken}`,
+      //               "Access-Control-Allow-Origin" : '*',
+                    
+      //               "content-type": "application/json",
+      //               'Accept': '*/*',
+                    
+      //   },
+      //     body: JSON.stringify(wordsAdded)
+      // }).then(resp => {
+      //      return resp.json()
+      // }).then(data => {
+      //   console.log(JSON.stringify(wordsAdded))
+      //   console.log("hi")
+      //   //console.log(data)
+      // }).catch((err)=>{
+      //     console.log(err.message);
+      //     console.log(accessToken);
+      // });
    }
    addWordsToDB()
   },[wordsAdded])
