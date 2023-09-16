@@ -3,12 +3,6 @@ import { NextRequest , NextResponse  } from 'next/server';
 
 
 
-export const config = {
-    api: {
-      externalResolver: true,
-    },
-  };
-
  
 let wordsAdded = {"hello" : 10}
 
