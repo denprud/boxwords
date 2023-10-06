@@ -472,7 +472,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
       //var replacer = function(k, v) { if (v === undefined) { return null; } return v; };
       //console.log(wordsAdded)
       //wordsAdded = JSON.stringify(wordsAdded, replacer);
-      //console.log(wordsAdded)
+      //console.log(worsAdded)
       
       
       
