@@ -66,10 +66,11 @@ export default function Row({baseClass, onRowClick, hoverStatus, currentWord, se
         }}
         onClick={()=>{
           //console.log("ohhh")
+          setDisplayValidity(false)
           onRowClick()
           setClassName(baseClass + " selected")
           setRowGame(rowRules)
-          setDisplayValidity(false)
+          
           
           }}>
             <Square i={0}/>
