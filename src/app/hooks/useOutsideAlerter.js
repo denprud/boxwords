@@ -1,16 +1,18 @@
 import React, { useEffect } from "react";
 
 
-export default function useOutsideAlerter(gameCompleted, ref, isSelecting, handleClick) {
+export default function useOutsideAlerter(gameCompleted, ref, isSelecting, setDisplayValidity, handleClick) {
     useEffect(() => {
       /**
        * Alert if clicked on outside of element
        */
       function handleClickOutside(event) {
+        setDisplayValidity(false)
         if(!isSelecting){
           if (ref.current && !ref.current.contains(event.target)) {
-            alert("You clicked outside of me!");
+            //alert("You clicked outside of me!");
             handleClick()
+            
           }
         }
       }
@@ -20,5 +22,5 @@ export default function useOutsideAlerter(gameCompleted, ref, isSelecting, handl
         // Unbind the event listener on clean up
         document.removeEventListener("mousedown", handleClickOutside);
       };
-    }, [gameCompleted, ref, isSelecting, handleClick]);
+    }, [gameCompleted, ref, isSelecting, handleClick, setDisplayValidity]);
   }

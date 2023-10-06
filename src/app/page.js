@@ -19,6 +19,8 @@ export default function Home() {
   ])
   const [numberOfTries, setNumberOfTries] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false)
+  const [rarity, setRarity] = useState(0);
+  const [maxRarity, setMaxRarity] = useState(0);
   
 //Empties the board and updates tries once the array game is completed
   useEffect(() => {
@@ -31,6 +33,13 @@ export default function Home() {
     }
   }, [gameCompleted]);
 
+//Sets the maxRarity
+  useEffect(() => {
+      if (maxRarity < rarity){
+        setMaxRarity(rarity)
+      }
+  }, [rarity]);
+
 
 
   
@@ -41,12 +50,12 @@ export default function Home() {
     <>
       <div className='interface'>
         <h1>Box Words</h1>
-        <div className="line">
+        <div >
           <hr/>
         </div>
       </div>
-      <Board gameCompleted = {gameCompleted} setGameCompleted={setGameCompleted} wordset={wordset} setWordset={setWordset}  />
-      {gameCompleted && <Modal setOpenModal={setGameCompleted} numberOfTries={numberOfTries}/>}
+      <Board gameCompleted = {gameCompleted} setGameCompleted={setGameCompleted} wordset={wordset} setWordset={setWordset} rarity={rarity} setRarity={setRarity} />
+      {gameCompleted && <Modal setOpenModal={setGameCompleted} numberOfTries={numberOfTries} rarity={rarity} maxRarity={maxRarity}/>}
       {showTutorial && <Tutorial setShowTutorial={setShowTutorial}/>}
       <button className="button" onClick={() =>{setShowTutorial(true)}}>Rules</button>
     </>

@@ -6,6 +6,8 @@ export const WORDS = [
     'would',
     'these',
     'other',
+    'civic',
+    'clift',
     'words',
     'could',
     'write',

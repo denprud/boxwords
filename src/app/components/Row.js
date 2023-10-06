@@ -5,14 +5,25 @@ import { useState } from 'react';
 
 
 
-export default function Row({baseClass, onRowClick, hoverStatus, currentWord, selectedRow, setRowGame, rowRules}) {
+export default function Row({baseClass, onRowClick, hoverStatus, currentWord, selectedRow, setRowGame, rowRules, rowValidity, displayValidity, setDisplayValidity}) {
   
   const [className, setClassName] = useState(baseClass);
   const [letter, setLetter] = useState(currentWord.word[currentWord.index])
 
   useEffect(()=>{
-    setClassName(baseClass)
-  }, [hoverStatus, selectedRow, baseClass])
+    if(displayValidity){
+      if(rowValidity){
+        setClassName(baseClass+" correct")
+      }
+      else{
+        setClassName(baseClass+" incorrect")
+      }
+    }
+    else{
+      setClassName(baseClass)
+    }
+    
+  }, [hoverStatus, selectedRow, baseClass, displayValidity])
  
 
     function Square({i}){
@@ -41,18 +52,22 @@ export default function Row({baseClass, onRowClick, hoverStatus, currentWord, se
         <div className={className}
         onMouseEnter={() => {
           setClassName(() => { return hoverStatus ? baseClass + " hover" : className});
-          setRowGame(rowRules)    
+          if(hoverStatus){
+            setRowGame(rowRules)
+          }    
         }}
         onMouseLeave={() => {
           setClassName(() => { return hoverStatus ? baseClass : className})
-          setRowGame("")
+          if(hoverStatus){
+            setRowGame("")
+          }
         }}
         onClick={()=>{
           
           onRowClick()
-          //console.log(hoverStatus)
-          
-            setClassName(baseClass + " selected")
+          setClassName(baseClass + " selected")
+          setRowGame(rowRules)
+          setDisplayValidity(false)
           
           }}>
             <Square i={0}/>

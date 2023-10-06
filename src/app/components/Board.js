@@ -2,16 +2,12 @@
 
 import React, { useEffect, useRef } from 'react'
 import Row from './Row'
-import Modal from './Modal';
 import { useState } from 'react'
 import useOutsideAlerter from '../hooks/useOutsideAlerter';
 import useEnforceRules from '../hooks/useEnforceRule';
-import PropTypes from "prop-types";
-import {GAMES} from "./../../../data/games"
-import {wordsadded} from "./../../../data/wordsadded"
-import { configDotenv } from 'dotenv';
-import { set } from 'mongoose';
 import * as Realm from "realm-web";
+import Line from './Line';
+
 
 
 //import {dict, userCount} from  "./../../../data/dictionary"
@@ -22,13 +18,11 @@ import * as Realm from "realm-web";
 
 
 
-export default function Board({gameCompleted, setGameCompleted, wordset, setWordset}){
+export default function Board({gameCompleted, setGameCompleted, wordset, setWordset, rarity, setRarity}){
   
-  // const [wordset, setWordset] = useState([
-  //   {word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0},{word: Array(5).fill(""), index: 0}
-  // ])
-  //configDotenv()
+  
   const wrapperRef = useRef(null);
+  const submit = useRef(null);
   //state to determine if we are deciding to click on a row
   const [isSelecting, setIsSelecting] = useState(true);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -36,11 +30,10 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   const [rowTwoValid, setRowTwoValid] = useState(false);
   const [rowThreeValid, setRowThreeValid] = useState(false);
   const [rowFourValid, setRowFourValid] = useState(false);
-  const [rarity, setRarity] = useState(0);
-  //const [gameCompleted, setGameCompleted] = useState(false);
-  //const [validate, setValidate] = useState(false);
+  
+  const [displayValidity, setDisplayValidity] = useState(false)
   const [wordsAdded, setWordsAdded] = useState({test:6})
-  const [rowRules, setRowRules] = useState({"rowOne": "none", "rowTwo": "none", "rowThree": "none", "rowFour": "none"})
+  const [rowRules, setRowRules] = useState({0: "none", 1: "palindrome", 2: { "name": "enforce", "count": 1, 'char':'e'}, 3: "none"})
   const [rowGame, setRowGame] = useState("")
   const app = new Realm.App({ id: process.env.NEXT_PUBLIC_APP_ID });
   const baseUrl = process.env.NEXT_PUBLIC_DATA_API_URL;
@@ -63,7 +56,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
 
   //console.log(baseUrl)
   
-  useOutsideAlerter(gameCompleted, wrapperRef, isSelecting,()=>{
+  useOutsideAlerter(gameCompleted, wrapperRef, isSelecting, setDisplayValidity,()=>{
     //resets the selection process
     resetStates()
   });
@@ -75,19 +68,23 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   }, [handleKeyup])
 
   useEffect(() => {
-  //   const getCurrentGame = async () =>{
-  //     let results = await fetch(`${baseUrl}/api/getGame`).then(resp => {
-  //          return resp.json()
-  //     }).then(data => {
-  //       setRowRules(data)
-  //       console.log(data)
-  //     }).catch((err)=>{
-  //         console.log(err.message);
-  //     });
-  //  }
+    const getCurrentGame = async () =>{
+      let results = await fetch(`${baseUrl}/api/getGame`).then(resp => {
+           return resp.json()
+      }).then(data => {
+
+        if(data.length != 0){
+          setRowRules(data)
+        }
+
+        console.log(data)
+      }).catch((err)=>{
+          console.log(err.message);
+      });
+   }
 
    
-   //getCurrentGame()
+   getCurrentGame()
   }, [])
 
 
@@ -106,64 +103,50 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
     }
   },[gameCompleted])
 
+  // //https://cors-anywhere.herokuapp.com/
+      //https://thingproxy.freeboard.io/fetch/
+
+      // console.log(JSON.stringify(wordsAdded))
+      
+      
+     
+
   useEffect(()=>{
-   
-    
     const addWordsToDB = async () =>{
-      // let apiName = 'MyApiName'; // replace this with your api name.
-      // let path = '/path'; //replace this with the path you have configured on your API
-      // let myInit = {
-      //   body: {}, // replace this with attributes you need
-      //   headers: {} // OPTIONAL
-      // }
-
-      // API.post(apiName, path, myInit).then(response => {
-      //     // Add your code here
-      // });
+      const accessToken = await getValidAccessToken();
       
-      
-      
-      //const accessToken = await getValidAccessToken();
-      //console.log(accessToken)
-      
-      //https://cors-anywhere.herokuapp.com/
-
-      console.log(JSON.stringify(wordsAdded))
-      
-      let results = await fetch(`/api/serverless-example`,{ 
-        headers: {
-                       
-                        "content-type": "application/json",
-                        "Accept": "application/json"
-        },
-        method: 'PATCH',
-        mode: "cors",
-        body: JSON.stringify(wordsAdded)
+      let results = await fetch(`${baseUrl}/api/update/recent`, {
+          method: 'PUT',
+          headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Request-Headers": "*",
+          },
+          body: JSON.stringify(wordsAdded)
+      }).then(resp => {
+           return resp.json()
+      }).then(data => {
+        console.log(JSON.stringify(wordsAdded))
+      }).catch((err)=>{
+          console.log(err.message);
+          
       });
-      //console.log(process.env.VERCELURL)
-      // //Need a better solution
-      // let results = await fetch(`https://thingproxy.freeboard.io/fetch/${baseUrl}/api/update/recent`, {
-      //     method: 'PATCH',
-      //     mode: "cors",
-      //     headers: {
-      //               'Authorization': `Bearer ${accessToken}`,
-      //               "Access-Control-Allow-Origin" : '*',
-                    
-      //               "content-type": "application/json",
-      //               'Accept': '*/*',
-                    
+
+      // let results = await fetch(`/api/serverless-example/`,{ 
+      //   headers: {
+      //                   "content-type": "application/json",
+      //                   "Accept": "application/json"
       //   },
-      //     body: JSON.stringify(wordsAdded)
+      //   method: 'PATCH',
+      //   mode: "cors",
+      //   body: JSON.stringify({test:6})
       // }).then(resp => {
-      //      return resp.json()
-      // }).then(data => {
-      //   console.log(JSON.stringify(wordsAdded))
-      //   console.log("hi")
-      //   //console.log(data)
-      // }).catch((err)=>{
-      //     console.log(err.message);
-      //     console.log(accessToken);
-      // });
+      //        return resp.json
+      //   }).then(data => {
+      //     console.log(data)
+      //   });
+      // console.log(process.env.VERCELURL)
+
+
    }
    addWordsToDB()
   },[wordsAdded])
@@ -227,6 +210,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
               }
               newWordSet[selectedRow].word[index] = ""
               newWordSet[2].word = Array(5).fill("")
+              newWordSet[2].word[4] = newWordSet[3].word[4]
               newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
               newWordSet[2].index = findEmpty(newWordSet[2].word)
             }
@@ -237,6 +221,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
               if (newWordSet[selectedRow].index  === 1){
                   newWordSet[selectedRow].word[index-1] = ""
                   newWordSet[1].word = Array(5).fill("")
+                  newWordSet[1].word[4] = newWordSet[3].word[0]
                   newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
                   newWordSet[1].index = findEmpty(newWordSet[1].word)
               }
@@ -252,6 +237,8 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
           }
           break;
         case 1:
+
+          //IF the index is empty
           if(newWordSet[selectedRow].index  === 0){
             if(type === "append"){
               newWordSet[selectedRow].word[newWordSet[selectedRow].index] =  key.key
@@ -283,6 +270,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
               }
               newWordSet[selectedRow].word[newWordSet[selectedRow].index] = ""
               newWordSet[3].word = Array(5).fill("")
+              newWordSet[3].word[4] = newWordSet[2].word[4]
               newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
               newWordSet[3].index = findEmpty(newWordSet[3].word)
             }
@@ -293,6 +281,8 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
               if (newWordSet[selectedRow].index  === 1){
                   newWordSet[selectedRow].word[index-1] = ""
                   newWordSet[0].word = Array(5).fill("")
+                  //Retain original ending
+                  newWordSet[0].word[4] = newWordSet[2].word[0]
                   newWordSet[selectedRow].index = findEmpty(newWordSet[selectedRow].word)
                   newWordSet[0].index = findEmpty(newWordSet[1].word)
               }
@@ -433,10 +423,12 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   } 
   
   function HandleSubmit(){
-      setRowOneValid(useEnforceRules(rowRules.rowOne, wordset[0].word, wordset))
-      setRowTwoValid(useEnforceRules(rowRules.rowTwo, wordset[1].word, wordset))
-      setRowThreeValid(useEnforceRules(rowRules.rowThree, wordset[2].word, wordset))
-      setRowFourValid(useEnforceRules(rowRules.rowFour, wordset[3].word, wordset))
+      setRowOneValid(useEnforceRules(rowRules[0], wordset[0].word, wordset))
+      setRowTwoValid(useEnforceRules(rowRules[1], wordset[1].word, wordset))
+      setRowThreeValid(useEnforceRules(rowRules[2], wordset[2].word, wordset))
+      setRowFourValid(useEnforceRules(rowRules[3], wordset[3].word, wordset))
+      setDisplayValidity(true)
+      //setIsSelecting(true)
       }
   
 
@@ -503,15 +495,28 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
   return (
    
     <div className="board_module" ref={wrapperRef}>
-          <Row baseClass={"row_module top"} onRowClick={()=>handleClick(0)} hoverStatus = {isSelecting} currentWord = {wordset[0]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules.rowOne}/>
-          <Row baseClass={"row_module left"} onRowClick={()=>handleClick(1)} hoverStatus = {isSelecting} currentWord = {wordset[1]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules.rowOne}/>
-          <Row baseClass={"row_module right"} onRowClick={()=>handleClick(2)} hoverStatus = {isSelecting} currentWord = {wordset[2]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules.rowOne}/>
-          <Row baseClass={"row_module bottom"} onRowClick={()=>handleClick(3)} hoverStatus = {isSelecting} currentWord = {wordset[3]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules.rowOne}/>
-          <div className='inner_box'>
-            <div className="rarity">{rarity}</div>
-            <button className="submit_button button" type="button" onClick={()=>HandleSubmit()} >Submit Puzzle!</button>
+          <Row baseClass={"row_module top"} onRowClick={()=>handleClick(0)} hoverStatus = {isSelecting} currentWord = {wordset[0]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules[0]} rowValidity={rowOneValid} displayValidity={displayValidity} setDisplayValidity={setDisplayValidity}/>
+          <Row baseClass={"row_module left"} onRowClick={()=>handleClick(1)} hoverStatus = {isSelecting} currentWord = {wordset[1]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules[1]} rowValidity={rowTwoValid} displayValidity={displayValidity} setDisplayValidity={setDisplayValidity}/>
+          <Row baseClass={"row_module right"} onRowClick={()=>handleClick(2)} hoverStatus = {isSelecting} currentWord = {wordset[2]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules[2]} rowValidity={rowThreeValid} displayValidity={displayValidity} setDisplayValidity={setDisplayValidity}/>
+          <Row baseClass={"row_module bottom"} onRowClick={()=>handleClick(3)} hoverStatus = {isSelecting} currentWord = {wordset[3]} selectedRow={selectedRow} setRowGame={setRowGame} rowRules={rowRules[3]} rowValidity={rowFourValid} displayValidity={displayValidity} setDisplayValidity={setDisplayValidity}/>
+          <div className='outer_inner'>
+            <div className='row_game_noti'>{`${typeof(rowGame) === 'string' ? rowGame : "Requires "+rowGame.count+" "+`\'${rowGame.char}\'`}`}</div>
+            {displayValidity && 
+            <>
+              <Line baseClass={"top_line"} rowValidity={rowOneValid}/>
+              <Line baseClass={"left_line"} rowValidity={rowTwoValid}/>
+              <Line baseClass={"right_line"} rowValidity={rowThreeValid}/>
+              <Line baseClass={"bottom_line"} rowValidity={rowFourValid}/>
+            </>
+            }
+            <div className='inner_box'>
+              <div className="rarity">{rarity % 1 === 0 ? rarity : (Math.round(rarity * 100) / 100).toFixed(2)}</div>
+              <button className="submit_button button" type="button" onClick={()=>HandleSubmit()} >Submit Puzzle!</button>
+            </div>
           </div>
-          <div className='row_game_noti'>{`${rowGame}`}</div>
+          
+          
+          
           
           
           {/* {gameCompleted && <Modal setOpenModal={setGameCompleted}/>} */}

@@ -9,5 +9,17 @@
         { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" }
       ]
     }
-  ]
+  ],
+  "crons": [
+    {
+      "path": "/api/serverless-example/crons/postData",
+      "schedule": "0 0 * * *"
+    }, 
+    {
+      "path": "/api/serverless-example/crons/postGame",
+      "schedule": "0 0 * * *"
+    }
+  ],
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api" }]
+
 }
