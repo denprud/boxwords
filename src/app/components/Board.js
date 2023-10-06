@@ -9,15 +9,6 @@ import * as Realm from "realm-web";
 import Line from './Line';
 
 
-
-//import {dict, userCount} from  "./../../../data/dictionary"
-
-
-
-
-
-
-
 export default function Board({gameCompleted, setGameCompleted, wordset, setWordset, rarity, setRarity}){
   
   
@@ -422,7 +413,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
     setSelectedRow(num);
   } 
   
-  function handleSubmit(){
+  function HandleSubmit(){
       setRowOneValid(useEnforceRules(rowRules[0], wordset[0].word, wordset))
       setRowTwoValid(useEnforceRules(rowRules[1], wordset[1].word, wordset))
       setRowThreeValid(useEnforceRules(rowRules[2], wordset[2].word, wordset))
@@ -511,7 +502,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
             }
             <div className='inner_box'>
               <div className="rarity">{rarity % 1 === 0 ? rarity : (Math.round(rarity * 100) / 100).toFixed(2)}</div>
-              <button className="submit_button button" type="button" onClick={()=>handleSubmit()} >Submit Puzzle!</button>
+              <button className="submit_button button" type="button" onClick={()=>HandleSubmit()} >Submit Puzzle!</button>
             </div>
           </div>
           
