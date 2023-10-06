@@ -464,15 +464,15 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
         }).then((data) => setWordsAdded(data)).then(setGameCompleted(true)).then().catch((err)=>{
             console.log(err.message);
         });
-        //console.log(results)
+        //console.log(rescults)
       }
       getWords()
       
       
       //var replacer = function(k, v) { if (v === undefined) { return null; } return v; };
-      //console.log(wordsAdded)
+      //console.log(wordscAdded)
       //wordsAdded = JSON.stringify(wordsAdded, replacer);
-      //console.log(worsAdded)
+      //console.log(worsAddved)
       
       
       
