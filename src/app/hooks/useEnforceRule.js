@@ -9,7 +9,7 @@ lists: the current list or wordset
 */
 export default function enforceRule(rowRule, arr, lists){
     const word = arrayToString(arr)
-    console.log(word)
+    //console.log(word)
     if (!checkWordValidity(word)){
         //console.log("not in list")
         return false
@@ -65,7 +65,7 @@ export default function enforceRule(rowRule, arr, lists){
                 letterCount+=1
             }
        })
-       console.log(letterCount)
+       //console.log(letterCount)
        return letterCount >= count
     }
 

@@ -52,7 +52,7 @@ body{
 
 .square{
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 500;
     caret-color: white;
     font-size: 1.5vw;
     display:flex;

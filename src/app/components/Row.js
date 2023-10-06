@@ -18,8 +18,10 @@ export default function Row({baseClass, onRowClick, hoverStatus, currentWord, se
       else{
         setClassName(baseClass+" incorrect")
       }
+    
     }
     else{
+      //console.log("lol")
       setClassName(baseClass)
     }
     
@@ -63,7 +65,7 @@ export default function Row({baseClass, onRowClick, hoverStatus, currentWord, se
           }
         }}
         onClick={()=>{
-          
+          //console.log("ohhh")
           onRowClick()
           setClassName(baseClass + " selected")
           setRowGame(rowRules)

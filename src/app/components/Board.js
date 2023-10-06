@@ -77,7 +77,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
           setRowRules(data)
         }
 
-        console.log(data)
+        //console.log(data)
       }).catch((err)=>{
           console.log(err.message);
       });
@@ -125,7 +125,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
       }).then(resp => {
            return resp.json()
       }).then(data => {
-        console.log(JSON.stringify(wordsAdded))
+        //console.log(JSON.stringify(wordsAdded))
       }).catch((err)=>{
           console.log(err.message);
           
@@ -422,13 +422,13 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
     setSelectedRow(num);
   } 
   
-  function HandleSubmit(){
+  function handleSubmit(){
       setRowOneValid(useEnforceRules(rowRules[0], wordset[0].word, wordset))
       setRowTwoValid(useEnforceRules(rowRules[1], wordset[1].word, wordset))
       setRowThreeValid(useEnforceRules(rowRules[2], wordset[2].word, wordset))
       setRowFourValid(useEnforceRules(rowRules[3], wordset[3].word, wordset))
       setDisplayValidity(true)
-      //setIsSelecting(true)
+      //resetStates()
       }
   
 
@@ -442,7 +442,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
         let results =  await fetch(`${baseUrl}/api/getOne/recent`).then(resp => {
             return resp.json()
           }).then( (data)=>{
-            console.log(data[0])
+            //console.log(data[0])
             wordsExist = data[0];
              wordset.forEach (element => {
               const string = arrayToString(element.word)
@@ -458,7 +458,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
                 newRarity += 1
               }
             });
-           console.log(newRarity)
+           //console.log(newRarity)
            setRarity(newRarity)
            return newWordsAdded
         }).then((data) => setWordsAdded(data)).then(setGameCompleted(true)).then().catch((err)=>{
@@ -511,7 +511,7 @@ export default function Board({gameCompleted, setGameCompleted, wordset, setWord
             }
             <div className='inner_box'>
               <div className="rarity">{rarity % 1 === 0 ? rarity : (Math.round(rarity * 100) / 100).toFixed(2)}</div>
-              <button className="submit_button button" type="button" onClick={()=>HandleSubmit()} >Submit Puzzle!</button>
+              <button className="submit_button button" type="button" onClick={()=>handleSubmit()} >Submit Puzzle!</button>
             </div>
           </div>
           

@@ -7,7 +7,8 @@ export default function useOutsideAlerter(gameCompleted, ref, isSelecting, setDi
        * Alert if clicked on outside of element
        */
       function handleClickOutside(event) {
-        setDisplayValidity(false)
+        
+        //setDisplayValidity(false)
         if(!isSelecting){
           if (ref.current && !ref.current.contains(event.target)) {
             //alert("You clicked outside of me!");

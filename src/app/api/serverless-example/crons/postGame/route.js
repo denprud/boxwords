@@ -1,6 +1,15 @@
 import fetch from 'node-fetch'
 import {NextResponse  } from 'next/server';
 
+// program to generate random strings
+
+// declare all characters
+const characters ='aeiou';
+
+function randomCharacter() { // min and max included 
+  return characters.charAt(Math.floor(Math.random() * characters.length));
+}
+
 function randomIntFromInterval(min, max) { // min and max included 
     return Math.floor(Math.random() * (max - min + 1) + min)
   }
@@ -16,7 +25,7 @@ function randomIntFromInterval(min, max) { // min and max included
             ret[i] = "palindrome"
         }
         if(rndInt == 3){
-            ret[i] = { "name": "enforce", "count": randomIntFromInterval(1, 2), 'char':'e'}
+            ret[i] = { "name": "enforce", "count": randomIntFromInterval(1, 2), 'char': randomCharacter()}
         }
     }
     return ret
