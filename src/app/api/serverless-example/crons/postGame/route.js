@@ -25,7 +25,7 @@ function randomIntFromInterval(min, max) { // min and max included
             ret[i] = "palindrome"
         }
         if(rndInt == 3){
-            ret[i] = { "name": "enforce", "count": randomIntFromInterval(1, 2), 'char': randomCharacter()}
+            ret[i] = { "name": "enforce", "count": 1, 'char': randomCharacter()}
         }
     }
     return ret

@@ -15,6 +15,7 @@ body{
     grid-template-rows: repeat(5, 110px);
     height: 550px;
     width: 550px;
+    padding: 1%;
 }
 
 .row_module{
@@ -131,7 +132,7 @@ body{
 
 
 .button{
-    background: #fff;
+  background: #fff;
   backface-visibility: hidden;
   border-radius: .375rem;
   border-style: solid;
